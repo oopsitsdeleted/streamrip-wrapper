@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>lawnmusic</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #1d1d1d; color: #ffffff; }
+        h1, h2 { color: #ffffff; border-bottom: 1px solid #3d3d3d; padding-bottom: 5px; margin-top: 20px;}
+        form { margin-bottom: 20px; background-color: #292929; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1); }
+        .search-options { margin-bottom: 15px; }
+        .search-options label { margin-right: 15px; font-weight: bold; }
+        .search-options input[type="radio"] { margin-right: 5px; }
+        input[type="text"] {
+            padding: 10px;
+            border: 1px solid #f0f0f0;
+            border-radius: 4px;
+            width: 70%;
+            margin-right: 10px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #3195ff;
+            color: rgb(255, 255, 255);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .song-list-container {
+            margin-top: 20px;
+            background-color: #292929;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .item-row { /* Renamed from song-item */
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: #131212;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 4px;
+        }
+        .item-row:hover {
+            background-color: rgb(73, 73, 73);
+        }
+        .item-details { /* Renamed from song-details */
+            flex-grow: 1;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        .download-button {
+            padding: 8px 15px;
+            background-color: #28a745; /* Green */
+            color: rgb(255, 255, 255);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        .download-button:hover {
+            background-color: #218838;
+        }
+        pre {
+            padding: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+        }
+        .message-box {
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-box.info {
+            color: #0c5460;
+            border: 1px solid #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Streamrip Qobuz Web Wrapper</h1>
+
+    <form method="POST" action="/">
+        <div class="search-options">
+            <label>Search Type:</label>
+            <input type="radio" id="search_type_track" name="search_type" value="track" {% if current_search_type == 'track' %}checked{% endif %}>
+            <label for="search_type_track">Track</label>
+            <input type="radio" id="search_type_album" name="search_type" value="album" {% if current_search_type == 'album' %}checked{% endif %}>
+            <label for="search_type_album">Album</label>
+        </div>
+        <input type="text" name="text_input" placeholder="Track/album name..." size="50" required>
+        <input type="submit" value="Search">
+    </form>
+
+    {% if items %}
+        <div class="song-list-container">
+            <h2>Search Results ({{ current_search_type.capitalize() }}s):</h2>
+            {% for item in items %}
+                <div class="item-row">
+                    <div class="item-details">
+                        <strong>{{ loop.index }}. {{ item.title }}</strong> by {{ item.artist }} (ID: {{ item.id }}) [{{ item.media_type.capitalize() }}]
+                    </div>
+                    <form method="POST" action="/download_item" style="margin: 0;"> {# Changed action to /download_item #}
+                        <input type="hidden" name="item_id" value="{{ item.id }}">
+                        <input type="hidden" name="item_type" value="{{ item.media_type }}"> {# Pass media_type #}
+                        <button type="submit" class="download-button">Download {{ item.media_type.capitalize() }}</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Enter name above to search album/track on Qobuz.</p>
+    {% endif %}
+
+    {% if download_output %}
+        <div class="message-box {% if 'Error' in download_output %}error{% else %}info{% endif %}">
+            <h2>Download Command Output:</h2>
+            <pre>{{ download_output }}</pre>
+        </div>
+    {% endif %}
+</body>
+</html>
